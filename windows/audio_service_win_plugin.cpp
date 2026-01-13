@@ -33,6 +33,16 @@ namespace audio_service_win
   void AudioServiceWinPlugin::RegisterWithRegistrar(
       flutter::PluginRegistrarWindows *registrar)
   {
+
+    static bool plugin_already_registered = false;
+
+    if (plugin_already_registered) {
+      // Skip registration in subwindow
+      return;
+    }
+
+    plugin_already_registered = true;
+
     channel = std::make_unique<flutter::MethodChannel<flutter::EncodableValue>>(
         registrar->messenger(), "audio_service_win",
         &flutter::StandardMethodCodec::GetInstance());
