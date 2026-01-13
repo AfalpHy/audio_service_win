@@ -196,19 +196,33 @@ void AudioServiceWinPlugin::HandleMethodCall(
 
           if (!artUri.empty())
           {
-            try
-            {
-              winrt::Windows::Foundation::Uri uri(winrt::to_hstring(artUri));
-              auto thumbRef = winrt::Windows::Storage::Streams::RandomAccessStreamReference::CreateFromUri(uri);
-              updater.Thumbnail(thumbRef);
-            }
-            catch (...)
-            {
-              // If thumbnail fails, continue without it
-              std::cerr << "Failed to set thumbnail in Notification: " << artUri << std::endl;
-            }
+            std::thread([artUri]() {
+              winrt::init_apartment(winrt::apartment_type::multi_threaded);
+              try {
+                if (artUri.rfind("http://", 0) == 0 ||
+                    artUri.rfind("https://", 0) == 0) {
+                  winrt::Windows::Foundation::Uri uri(
+                      winrt::to_hstring(artUri));
+                  auto thumbRef = winrt::Windows::Storage::Streams::
+                      RandomAccessStreamReference::CreateFromUri(uri);
+                  updater.Thumbnail(thumbRef);
+                } else if (artUri.rfind("file://", 0) == 0) {
+                  auto storageFile =
+                      winrt::Windows::Storage::StorageFile::
+                          GetFileFromPathAsync(winrt::to_hstring(artUri))
+                              .get();
+                  auto thumbRef = winrt::Windows::Storage::Streams::
+                      RandomAccessStreamReference::CreateFromFile(storageFile);
+                  updater.Thumbnail(thumbRef);
+                }
+                updater.Update();
+              } catch (...) {
+                // If thumbnail fails, continue without it
+                std::cerr << "Failed to set thumbnail in Notification: "
+                          << artUri << std::endl;
+              }
+            }).detach();
           }
-          updater.Update();
         }
         result->Success();
       }
