@@ -205,8 +205,7 @@ void AudioServiceWinPlugin::HandleMethodCall(
           }
         }
 
-        if (updater)
-        {
+        if (updater) {
           smtc.IsEnabled(true);
           updater.ClearAll();
           updater.Type(winrt::Windows::Media::MediaPlaybackType::Music);
@@ -214,10 +213,9 @@ void AudioServiceWinPlugin::HandleMethodCall(
           updater.MusicProperties().Artist(winrt::to_hstring(artist));
           updater.MusicProperties().AlbumTitle(winrt::to_hstring(album));
 
-          if (!artUri.empty())
-          {
-            std::thread([artUri]() {
-              winrt::init_apartment(winrt::apartment_type::multi_threaded);
+          std::thread([artUri]() {
+            winrt::init_apartment(winrt::apartment_type::multi_threaded);
+            if (!artUri.empty()) {
               try {
                 if (artUri.rfind("http://", 0) == 0 ||
                     artUri.rfind("https://", 0) == 0) {
@@ -235,15 +233,16 @@ void AudioServiceWinPlugin::HandleMethodCall(
                       RandomAccessStreamReference::CreateFromFile(storageFile);
                   updater.Thumbnail(thumbRef);
                 }
-                updater.Update();
               } catch (...) {
                 // If thumbnail fails, continue without it
                 std::cerr << "Failed to set thumbnail in Notification: "
                           << artUri << std::endl;
               }
-            }).detach();
-          }
+            }
+            updater.Update();
+          }).detach();
         }
+
         result->Success();
       }
       else
