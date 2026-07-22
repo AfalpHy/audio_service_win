@@ -10,6 +10,8 @@
 #include <flutter/plugin_registrar_windows.h>
 #include <flutter/standard_method_codec.h>
 
+#define _SILENCE_EXPERIMENTAL_COROUTINE_DEPRECATION_WARNINGS
+
 #include <winrt/Windows.Media.h>
 #include <winrt/Windows.Media.Playback.h>
 #include <winrt/Windows.Foundation.h>
